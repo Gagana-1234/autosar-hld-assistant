@@ -1,6 +1,13 @@
 """
 app/core/security.py
 Password hashing, JWT creation/verification, and RBAC role enforcement.
+
+Using python-jose for JWT and bcrypt for passwords.
+Permissions dict is hardcoded here for simplicity - if requirements grow
+we should move this to the database so admins can configure it.
+
+FIXME: token expiry not being enforced properly on every request
+TODO: add refresh token support so users don't get logged out mid-session
 """
 from __future__ import annotations
 
