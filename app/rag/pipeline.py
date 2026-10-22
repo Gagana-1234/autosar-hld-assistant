@@ -1,6 +1,12 @@
 """
 app/rag/pipeline.py
-End-to-end RAG pipeline for answering AUTOSAR HLD questions.
+End-to-end RAG for answering AUTOSAR HLD questions.
+
+Kept intentionally simple for now. Don't over-engineer until we know
+what query patterns are actually used in practice.
+
+TODO: add query result caching - same questions get asked repeatedly
+TODO: try HyDE (hypothetical document embeddings) for better recall
 
 Flow:
   1. Retrieve relevant chunks (retriever.retrieve)

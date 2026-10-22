@@ -1,7 +1,11 @@
 """
 app/db/crud.py
-Database helper functions — thin wrappers over SQLAlchemy queries.
-All functions accept a Session and return ORM objects (never raw rows).
+Database helper functions - thin wrappers over SQLAlchemy queries.
+All functions take a Session and return ORM objects (not raw rows).
+
+TODO: add pagination to list functions - will be needed once projects
+      have hundreds of documents
+TODO: might want to add soft delete instead of hard delete at some point
 """
 from __future__ import annotations
 

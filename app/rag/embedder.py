@@ -2,15 +2,12 @@
 app/rag/embedder.py
 Embedding provider abstraction.
 
-Supports:
-  - sentence-transformers (local, default — BGE-M3 or E5-large)
-  - Stub provider for tests (returns deterministic zero vectors)
+Currently supports sentence-transformers (local) and a stub for tests.
+The stub just returns zero vectors - good enough for unit tests.
 
-The active provider is selected by settings.embedding_model.
-All providers expose the same interface:
-    embed_texts(texts: list[str]) -> list[list[float]]
-    embed_query(text: str)        -> list[float]
-    dimension: int
+First model load is slow (downloads ~500MB), subsequent loads use cache.
+TODO: look into quantized models for faster inference on CPU
+NOTE: BAAI/bge-base-en-v1.5 is a good balance of speed vs quality for English docs
 """
 from __future__ import annotations
 
