@@ -1,0 +1,56 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyd
+*.pyo
+.Python
+build/
+dist/
+*.egg-info/
+.eggs/
+
+# Virtual environments
+venv/
+.venv/
+env/
+.env.local
+
+# Environment (keep .env.example, ignore .env with secrets)
+.env
+
+# Data directories (large, generated)
+data/sqlite/
+data/chroma/
+data/uploads/
+
+# Pytest cache
+.pytest_cache/
+.coverage
+htmlcov/
+
+# IDEs
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
+
+# Streamlit
+.streamlit/
+
+# MyPy
+.mypy_cache/
+
+# Ruff/Pyright
+.ruff_cache/
+
+# Stray files
+file
