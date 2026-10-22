@@ -2,12 +2,19 @@
 app/validation/consistency.py
 Cross-document consistency checks for AUTOSAR HLD entities.
 
-Rules implemented:
-  1. Orphan ports — port referenced in a signal but SWC not found
-  2. Missing interfaces — dependency via_interface references a non-existent interface
-  3. Dangling signals — signal with source or target SWC not in the entity set
+Started with 5 rules — more can be added as we learn what reviewers
+actually care about. Each rule gets its own function eventually.
+
+Rules so far:
+  1. Orphan ports (signal refs missing SWC)
+  2. Missing interfaces in dependencies
+  3. Dangling signals (source/target SWC not found)
   4. Duplicate entity names within same document
-  5. Bidirectional mismatch — TX signal at source but no RX at target
+  5. Bidirectional mismatch / unresolved ports
+
+TODO: rule 6 - check that port directions are consistent (TX on one side, RX on the other)
+TODO: rule 7 - warn if a SWC has zero ports (probably incomplete extraction)
+TODO: eventually move rules to a plugin-style registry so teams can add custom ones
 """
 from __future__ import annotations
 

@@ -2,13 +2,17 @@
 app/extraction/entity_extractor.py
 LLM-based entity extraction from document chunks.
 
-For each chunk the LLM is prompted with a structured extraction template
-that asks it to identify AUTOSAR entities (SWCs, interfaces, signals,
-dependencies, data flows).  The response is parsed into Pydantic models
-and stored in the database with confidence scores.
+Tried a few approaches here - settled on prompting the LLM for structured
+JSON output with a regex fallback for when the LLM isn't available.
 
-The module also exposes a rule-based fallback that uses regex patterns
-to catch commonly formatted AUTOSAR artefacts without an LLM call.
+The regex patterns are pretty naive right now, they'll miss things.
+LLM mode is much better but requires Ollama running locally.
+
+TODO: add a spaCy NER fallback as a middle ground between regex and LLM
+TODO: confidence scoring for regex hits is basically made up (0.4/0.5)
+      would be good to calibrate this against human-labeled examples
+FIXME: seen_names set resets per chunk so same entity extracted multiple times
+       across chunks - need deduplication at the document level
 """
 from __future__ import annotations
 
@@ -55,6 +59,9 @@ CHUNK (page {page}, section: "{section}"):
 
 # ── Regex-based fallback patterns ────────────────────────────────────────────
 
+# regex patterns for common AUTOSAR naming conventions
+# NOTE: these are based on the AUTOSAR naming guidelines but real projects
+# don't always follow them - might need project-specific overrides
 _SWC_PATTERNS = [
     re.compile(r"\b([A-Z][a-zA-Z0-9_]*(?:SWC|Swc|SwComponent))\b"),
     re.compile(r"\b([A-Z][a-zA-Z0-9_]*(?:Component|Comp))\b"),
@@ -169,7 +176,7 @@ def _extract_with_llm(chunk: DocumentChunk, db: Session) -> list[Entity]:
         prompt=prompt,
         system="You are a precise AUTOSAR document analysis engine. Return only valid JSON.",
         temperature=0.0,
-        max_tokens=2048,
+        max_tokens=2048,  # might need to increase for very long chunks
     )
 
     return _parse_llm_response(raw, chunk, db)
