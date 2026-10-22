@@ -1,10 +1,13 @@
 """
 app/ingestion/pipeline.py
 Orchestrates the full ingestion flow for a single document:
-  validate → save to disk → extract → chunk → store chunks in DB
+  validate -> save to disk -> extract -> chunk -> store chunks in DB
 
-This module is called from the /api/documents upload endpoint.
-It runs synchronously (FastAPI will dispatch it to a thread pool).
+Called from the /api/documents upload endpoint.
+Runs synchronously (FastAPI dispatches to thread pool).
+
+TODO: make this async properly at some point, background tasks would be better
+TODO: add progress tracking so the UI can show a progress bar
 """
 from __future__ import annotations
 
@@ -42,13 +45,15 @@ def run_ingestion(
     settings = get_settings()
     logger.info("Ingestion started for document {}: {}", doc.id, doc.filename)
 
-    # ── 1. Extract text / tables / headings ───────────────────────────────────
+    # Step 1: pull text/tables/headings out of the PDF
+    # NOTE: OCR is slow — can take 30s+ on scanned docs, warn the user?
     try:
         extraction: ExtractionResult = extract_pdf(
             content, ocr_dpi=settings.ocr_dpi
         )
     except Exception as exc:
         logger.error("Extraction failed for doc {}: {}", doc.id, exc)
+        # FIXME: should we mark the document as 'failed' in DB here instead of raising?
         raise
 
     # ── 2. Update document metadata ───────────────────────────────────────────
@@ -87,7 +92,8 @@ def run_ingestion(
     ]
     crud.bulk_insert_chunks(db, db_chunks)
 
-    # ── 5. Embed chunks and store in vector DB ────────────────────────────────
+    # Step 5: embed chunks into chroma
+    # TODO: batch size should probably be configurable per-deployment
     try:
         from app.rag.embedder import get_embedder
         from app.rag.vector_store import upsert_chunks
@@ -104,6 +110,7 @@ def run_ingestion(
         )
         logger.info("Embedded and indexed {} chunks in vector store", len(chunks))
     except Exception as exc:
+        # non-fatal: document is still usable, just not searchable yet
         logger.warning("Vector store indexing failed for doc {}: {}", doc.id, exc)
 
     # ── 6. Extract entities (regex fallback — LLM called separately) ──────────
